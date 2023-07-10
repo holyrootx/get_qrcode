@@ -1,0 +1,46 @@
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+a {
+  text-decoration: none;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-evenly;
+  background-color: black;
+  padding: 10px;
+}
+
+.navbar-link {
+  display: inline-block;
+  color: white;
+  text-decoration: none;
+  transition: background-color 0.3s;
+  padding: 15px 20px;
+}
+
+.navbar-link a:hover {
+  background-color: rgba(255, 0, 0, 0.8);
+}
+
+.navbar-link a:active {
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.middle {
+  height: 80vh;
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: black;
+  color: white;
+  padding: 10px;
+}
