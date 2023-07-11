@@ -2,9 +2,14 @@ from flask import Flask,request,url_for,redirect,render_template,session
 # route(/) slash 부터 시작 
 # rediret(url_for('fildname'))
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'
+app.secret_key = 'your_secret_key' # user borwser 에 저장함
 @app.route('/')
 def index():
+    try:
+        if session.get('count'): # 방문한 적이 있으면
+            return render_template('visited.html',driver_name=session.get('driver_name'))
+    except KeyError:
+        session['count'] = 0
     return redirect(url_for('driverform'))
 
 def checkform(form_data):
@@ -15,7 +20,7 @@ def checkform(form_data):
     driver_name = form_data.get('driver_name')
     phone_number = form_data.get('phone_number')
     car_number = form_data.get('car_number')
-
+    
     if driver_name and phone_number and car_number:
         return True
     else:
@@ -25,6 +30,11 @@ def get_form_data(form_data):
     driver_name = form_data.get('driver_name')
     phone_number = form_data.get('phone_number')
     car_number = form_data.get('car_number')
+
+    session['driver_name'] = driver_name
+    session['phone_number'] = phone_number
+    session['car_number'] = car_number
+
     return render_template('driverCheck.html',driver_name=driver_name,phone_number=phone_number,car_number=car_number)
 # def combined_info():
 #     driver_name = session.get('driver_name')
@@ -49,6 +59,8 @@ def driverform():
         else:
             return redirect(url_for('driverform')) # 입력 이상하게 했으니까 다시 입력 ㄱㄱ
     else:
+        if session.get('count'):
+            return render_template('visited.html',driver_name=session.get('driver_name'))
         return render_template('driverform.html') # get 방식이면 URL에 입력한거니까 폼 켜주기
 
     
@@ -61,13 +73,14 @@ def driverCheck():
 def driverCheckAction():
     btn_value = request.values.get("btn_value")
     if btn_value == "yes":
-        return "yespage"
+        session['count'] = 1
+        return render_template('lastpage.html',driver_name = session.get('driver_name'),phone_number=session.get('phone_number'),car_number=session.get('car_number'))
     else:
         return redirect(url_for('driverform'))
     
-@app.route('/lastpage')
-def lastpage():
-    return render_template('lastpage.html')    
+# @app.route('/lastpage')
+# def lastpage():
+#     return render_template('lastpage.html')    
 
 @app.route('/driverformAction')
 def driverformAction():
