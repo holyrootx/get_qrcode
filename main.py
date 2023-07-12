@@ -5,12 +5,19 @@ app = Flask(__name__)
 app.secret_key = 'your_secret_key' # user borwser 에 저장함
 @app.route('/')
 def index():
+    """session.get('count')
+    처음에 index page로 오면 
+    driverform.html로 redirection된다.
+    그러나 driverform -> driverCheck -> driverCheckAction.html 을 거쳐가면서 session['count']의 value를 counting한다.
+    그래서 한번 방문한 사람을 거르려고 이러한 코드를 추가했다.
+    방문을 했다면 session['count']의 값이 counting 됬다는 전제로말이다.
+    """
     try:
         if session.get('count'): # 방문한 적이 있으면
-            return render_template('visited.html',driver_name=session.get('driver_name'))
-    except KeyError:
-        session['count'] = 0
-    return redirect(url_for('driverform'))
+            return render_template('visited.html',driver_name=session.get('driver_name')) # 이미 방문했다고 다른 페이지 보여줌
+    except KeyError: # session[count]의 값이 없는 경우 === 방문을 한번도 하지않은 경우
+        session['count'] = 0 # 
+    return redirect(url_for('driverform')) # Driverform url로 이동
 
 def checkform(form_data):
     """작성 유효성 검사
@@ -49,13 +56,8 @@ def driverform():
     if request.method == "POST":
         # request form 객체는 immutableMultiDict 
         # dictname[key] = value        
-        if checkform(request.form):
-
-            # 데이터 잘 입력 했으면 세션이나 쿠키 처리하고 끝 페이지로 리다이렉션 
-            # 세션 쿠키 처리 로직
-            # return combined_info()
-
-            return get_form_data(request.form) # 잘가요 랜더링한 페이지 리턴
+        if checkform(request.form): # input 3개 다 입력했나 체크
+            return get_form_data(request.form) # 잘가요 랜더링한 페이지 리턴 driverCheck 문서 랜더링 
         else:
             return redirect(url_for('driverform')) # 입력 이상하게 했으니까 다시 입력 ㄱㄱ
     else:
@@ -67,15 +69,22 @@ def driverform():
 
 @app.route('/driverCheck',methods = ["POST","GET"])
 def driverCheck():
+    """
+    다시 수정하기 버튼과 저장하기 버튼 
+    이렇게 버튼이 2개 있는데 
+    driverCheckAction으로 POST방식으로 보낸다.
+    """
     return render_template('driverCheck.html')
 
 @app.route('/driverCheckAction',methods = ["POST"])
 def driverCheckAction():
     btn_value = request.values.get("btn_value")
     if btn_value == "yes":
+        """작성을 완료하면 세션의 count를 1로 만들고 lastpage로 리턴 """
         session['count'] = 1
         return render_template('lastpage.html',driver_name = session.get('driver_name'),phone_number=session.get('phone_number'),car_number=session.get('car_number'))
     else:
+        """수정해야 하면 다시 driverform으로 보낸다."""
         return redirect(url_for('driverform'))
     
 # @app.route('/lastpage')
